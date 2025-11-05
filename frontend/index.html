@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Stock Dashboard</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #f7f9fc 0%, #eaf1ff 100%);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+
+    .login-container {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      padding: 50px 40px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .login-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      color: #1c1c1e;
+      font-size: 1.8em;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #555;
+      font-size: 0.95em;
+      margin-bottom: 35px;
+    }
+
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 600;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #444;
+      width: 100%;
+    }
+
+    .google-btn:hover {
+      background: #f2f2f2;
+      border-color: #aaa;
+    }
+
+    .google-btn img {
+      width: 22px;
+      height: 22px;
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 0.85em;
+      color: #777;
+    }
+
+    @media (max-width: 500px) {
+      .login-container {
+        padding: 40px 25px;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <h1>Welcome Back 👋</h1>
+    <p>Sign in to continue to your stock dashboard</p>
+
+    <button class="google-btn" id="googleLogin">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo">
+      Continue with Google
+    </button>
+
+    <div class="footer-text">
+      © 2025 Stock Insights — All rights reserved.
+    </div>
+  </div>
+
+  <!-- ✅ Firebase Google Login Script -->
+  <script type="module">
+    // Import Firebase SDK modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+    // ✅ Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIFE-TZply_s96JoCW_7AFybzAnZrNECo",
+      authDomain: "stock-app-1f874.firebaseapp.com",
+      projectId: "stock-app-1f874",
+      storageBucket: "stock-app-1f874.appspot.com",
+      messagingSenderId: "441016642973",
+      appId: "1:441016642973:web:397b609a9770f0addad374",
+      measurementId: "G-956X0LQXK8"
+    };
+
+    // ✅ Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // ✅ Login button handler
+    const loginBtn = document.getElementById('googleLogin');
+    loginBtn.addEventListener('click', async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Save user info locally for dashboard access
+        localStorage.setItem("user", JSON.stringify({
+          name: user.displayName,
+          email: user.email,
+          photo: user.photoURL,
+        }));
+
+        console.log("✅ Logged in:", user.displayName);
+        // Redirect to your main dashboard
+        window.location.href = "results.html";
+      } catch (error) {
+        console.error("❌ Login failed:", error);
+        alert("Login failed. Please try again.");
+      }
+    });
+  </script>
+</body>
+</html>

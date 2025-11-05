@@ -1,0 +1,10 @@
+[
+  {"symbol": "AAPL", "name": "Apple Inc."},
+  {"symbol": "GOOG", "name": "Alphabet Inc."},
+  {"symbol": "MSFT", "name": "Microsoft Corp."},
+  {"symbol": "TSLA", "name": "Tesla Inc."},
+  {"symbol": "AMZN", "name": "Amazon.com Inc."},
+  {"symbol": "META", "name": "Meta Platforms Inc."},
+  {"symbol": "NFLX", "name": "Netflix Inc."},
+  {"symbol": "NVDA", "name": "NVIDIA Corp."}
+]
