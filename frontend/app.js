@@ -12,7 +12,7 @@ const {
   getDoc
 } = window.firebaseModules;
 
-const API_BASE = "http://127.0.0.1:5000";
+const API_BASE = "https://stock-tool-8gr3.onrender.com";
 let tickerList = [];
 let fuse;
 let selectedTickers = [];
