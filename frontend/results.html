@@ -10,7 +10,6 @@
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
 
-  <!-- ✅ Correct Firebase SDK Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -227,6 +226,66 @@
       flex-grow: 1;
     }
 
+    /* ===== NEW: Prediction Table Section ===== */
+    .prediction-section {
+      margin-top: 50px;
+      padding-top: 30px;
+      border-top: 2px solid #f1f5f9;
+    }
+
+    .prediction-section h2 {
+      font-size: 1.5rem;
+      color: #1e293b;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: #f8fafc;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      color: #64748b;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+      color: #334155;
+    }
+
+    .signal-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .bullish { background: #dcfce7; color: #166534; }
+    .bearish { background: #fee2e2; color: #991b1b; }
+
+    .analysis-text {
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
     .loading, .error {
       text-align: center;
       color: #475569;
@@ -253,7 +312,6 @@
   <div class="container">
     <h1>📊 Stock Viewer</h1>
 
-    <!-- ✅ Auth Section -->
     <div id="auth-section">
       <img id="userPhoto" class="user-photo" style="display:none;" />
       <p id="userInfo"></p>
@@ -277,6 +335,24 @@
     </div>
 
     <div id="results" class="results-grid"></div>
+
+    <div class="prediction-section" id="predictionSection" style="display:none;">
+      <h2>🚀 AI & Quantum Investment Analysis</h2>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 150px;">Company</th>
+              <th style="width: 180px;">Quantum Signal</th>
+              <th>Analysis (Day / Short / Long Term)</th>
+            </tr>
+          </thead>
+          <tbody id="predictionBody">
+            </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <script src="app.js" type="module"></script>
