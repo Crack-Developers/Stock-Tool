@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Stock Viewer</title>
+  <title>QuantTrade - Professional Stock Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
-
+  <script src="https://unpkg.com/lucide@latest"></script> 
+  
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // ✅ Correct Firebase Project Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBIFE-TZply_s96JoCW_7AFybzAnZrNECo",
       authDomain: "stock-app-1f874.firebaseapp.com",
@@ -34,272 +34,658 @@
   </script>
 
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background: linear-gradient(135deg, #f6f9fc 0%, #e8eef6 100%);
+    /* CSS Variables for Premium Theme */
+    :root {
+      --bg-body: #f1f5f9;
+      --bg-sidebar: #0f172a;
+      --bg-card: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding: 40px 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-body);
+      color: var(--text-main);
       display: flex;
-      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    .container {
-      background: #ffffff;
-      max-width: 1200px;
-      width: 95%;
-      border-radius: 16px;
-      padding: 40px 50px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    }
-
-    h1 {
-      text-align: center;
-      font-weight: 700;
-      color: #1e293b;
-      margin-bottom: 30px;
-    }
-
-    /* ===== Auth Section ===== */
-    #auth-section {
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      background-color: var(--bg-sidebar);
+      color: #fff;
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+      z-index: 20;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    #loginBtn {
-      background: #2563eb;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
+    .sidebar-header i {
+      color: var(--primary);
+    }
+
+    .sidebar-header h2 {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
+      letter-spacing: 0.5px;
+      margin: 0;
     }
 
-    #loginBtn:hover {
-      background: #1e40af;
+    .sidebar-nav {
+      flex: 1;
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      color: #94a3b8;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      border-left: 4px solid var(--primary);
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      background: linear-gradient(90deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0) 100%);
+    }
+
+    /* Main Content */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* Topbar */
+    .topbar {
+      background-color: var(--bg-card);
+      height: 72px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 24px 16px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    #auth-section {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #userPhoto {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid rgba(255,255,255,0.2);
     }
 
     #userInfo {
-      color: #334155;
-      font-size: 0.9em;
-    }
-
-    .user-photo {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #2563eb;
-    }
-
-    /* ===== Controls ===== */
-    .controls {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin: 20px 0;
-    }
-
-    label {
       font-weight: 500;
-      color: #334155;
+      color: #94a3b8;
+      font-size: 0.9rem;
+      word-break: break-all;
     }
 
-    input[type="date"], input[type="text"] {
-      border: 1px solid #cbd5e1;
+    #loginBtn {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 16px;
       border-radius: 8px;
-      padding: 6px 10px;
-      font-size: 0.95em;
-      outline: none;
-      transition: border-color 0.2s ease;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      text-align: center;
+      width: 100%;
     }
 
-    input[type="date"]:focus, input[type="text"]:focus {
-      border-color: #2563eb;
+    #loginBtn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
     }
 
-    /* ===== Search & Chips ===== */
-    .search-row {
+    /* Content Area */
+    .content {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Controls Panel */
+    .controls-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .controls-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    }
+
+    .controls-header {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 10px;
-      margin-bottom: 15px;
+      font-family: var(--font-heading);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-main);
+      padding-bottom: 16px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .controls-body {
+      display: flex;
       flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 24px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group input {
+      padding: 12px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--text-main);
+      outline: none;
+      transition: all 0.2s ease;
+      background-color: #f8fafc;
+    }
+
+    .input-group input:focus {
+      border-color: var(--primary);
+      background-color: #fff;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .search-wrapper {
+      display: flex;
+      gap: 8px;
     }
 
     #companyInput {
-      flex: 1;
-      min-width: 260px;
+      width: 320px;
     }
 
-    #addBtn, #submitBtn {
-      background: #2563eb;
-      color: white;
+    .btn {
+      padding: 12px 24px;
       border: none;
       border-radius: 8px;
-      padding: 10px 18px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s ease;
+      transition: all 0.2s ease;
+      font-family: var(--font-body);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
     }
 
-    #addBtn:hover, #submitBtn:hover {
-      background: #1e40af;
+    #addBtn {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+    }
+
+    #addBtn:hover {
+      background-color: #e2e8f0;
+      border-color: #cbd5e1;
+    }
+
+    #submitBtn {
+      background-color: var(--primary);
+      color: white;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+      padding: 12px 32px;
+    }
+
+    #submitBtn:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px -2px rgba(59, 130, 246, 0.4);
     }
 
     #chips {
       display: flex;
       flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-    }
-
-    .chip {
-      background: #2563eb;
-      color: white;
-      border-radius: 20px;
-      padding: 6px 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.9em;
-      font-weight: 500;
-    }
-
-    .chip button {
-      background: transparent;
-      border: none;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    /* ===== Results Grid ===== */
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-      gap: 25px;
-      justify-items: center;
-    }
-
-    .chart-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      width: 100%;
-      max-width: 550px;
-      height: 420px;
-      padding: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-    }
-
-    .chart-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-    }
-
-    .chart-card h3 {
-      margin: 0 0 10px;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .price {
-      font-size: 0.95em;
-      color: #475569;
-      margin-bottom: 12px;
-    }
-
-    .chart {
-      flex-grow: 1;
-    }
-
-    /* ===== NEW: Prediction Table Section ===== */
-    .prediction-section {
-      margin-top: 50px;
-      padding-top: 30px;
-      border-top: 2px solid #f1f5f9;
-    }
-
-    .prediction-section h2 {
-      font-size: 1.5rem;
-      color: #1e293b;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
       gap: 10px;
     }
 
+    .chip {
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .chip button {
+      background: none;
+      border: none;
+      color: #1e3a8a;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+      border-radius: 50%;
+      height: 20px;
+      width: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .chip button:hover {
+      background: #bfdbfe;
+      color: #1e40af;
+    }
+
+    /* Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .chart-card {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 480px;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .chart-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-main);
+    }
+
+    .chart-card h3::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .price {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-family: var(--font-body);
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .chart {
+      flex: 1;
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* Prediction Section */
+    .prediction-section {
+      background-color: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: none;
+      margin-bottom: 40px;
+    }
+
+    .prediction-header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(to right, #f8fafc, #ffffff);
+    }
+
+    .prediction-header i {
+      color: #8b5cf6;
+    }
+
+    .prediction-header h2 {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      margin: 0;
+      color: var(--text-main);
+    }
+
     .table-responsive {
+      width: 100%;
       overflow-x: auto;
-      background: #fff;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.95rem;
+      text-align: left;
     }
 
     th {
-      background: #f8fafc;
-      padding: 15px;
-      text-align: left;
+      background-color: #f8fafc;
+      padding: 18px 32px;
       font-weight: 600;
-      color: #64748b;
-      border-bottom: 1px solid #e2e8f0;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
     }
 
     td {
-      padding: 15px;
-      border-bottom: 1px solid #f1f5f9;
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
       vertical-align: top;
-      color: #334155;
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #f8fafc;
+    }
+
+    td strong {
+      font-size: 1.15rem;
+      color: var(--text-main);
+      display: block;
+      margin-bottom: 6px;
+      font-family: var(--font-heading);
+    }
+
+    td small {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      font-weight: 500;
     }
 
     .signal-badge {
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-weight: 700;
       font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: var(--shadow-sm);
     }
 
-    .bullish { background: #dcfce7; color: #166534; }
-    .bearish { background: #fee2e2; color: #991b1b; }
+    .bullish {
+      background-color: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+    }
+
+    .bearish {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
 
     .analysis-text {
-      line-height: 1.5;
-      white-space: pre-line;
+      line-height: 1.7;
+      color: #334155;
+      font-size: 1rem;
     }
 
-    .loading, .error {
+    /* Loading and Errors */
+    .loading {
       text-align: center;
-      color: #475569;
+      padding: 60px;
+      font-size: 1.2rem;
+      color: var(--primary);
       font-weight: 500;
-      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      grid-column: 1 / -1;
+    }
+
+    .loading::after {
+      content: '';
+      width: 40px;
+      height: 40px;
+      border: 4px solid #bfdbfe;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     .error {
-      color: #dc2626;
+      text-align: center;
+      padding: 24px;
+      font-size: 1rem;
+      color: var(--danger);
+      background: #fef2f2;
+      border-radius: var(--radius-md);
+      border: 1px solid #fecaca;
+      grid-column: 1 / -1;
+      font-weight: 500;
     }
 
-    @media (max-width: 640px) {
-      .controls {
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 80px;
+      }
+      .sidebar-header h2, .nav-item span {
+        display: none;
+      }
+      .sidebar-header {
+        justify-content: center;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 16px;
+      }
+      .sidebar-footer {
+        padding: 16px 8px;
+      }
+      #userInfo {
+        display: none;
+      }
+      #loginBtn {
+        font-size: 0.75rem;
+        padding: 8px 4px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
         flex-direction: column;
+        overflow: auto;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 16px;
+        flex-wrap: wrap;
+      }
+      .sidebar-nav {
+        flex-direction: row;
+        padding: 0;
+        justify-content: center;
+        flex: 1;
+      }
+      .sidebar-footer {
+        margin-top: 0;
+        padding: 16px 0;
+        border-top: none;
+        width: 100%;
+      }
+      #auth-section {
+        flex-direction: row;
+        justify-content: center;
+      }
+      #userInfo {
+        display: block;
+      }
+      .main-wrapper {
+        overflow: visible;
+      }
+      .topbar {
+        padding: 0 16px;
+      }
+      .content {
+        padding: 16px;
+      }
+      .controls-body {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input-group, .search-wrapper, #companyInput, #submitBtn {
+        width: 100%;
       }
       .results-grid {
         grid-template-columns: 1fr;
@@ -307,54 +693,113 @@
     }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <h1>📊 Stock Viewer</h1>
 
-    <div id="auth-section">
-      <img id="userPhoto" class="user-photo" style="display:none;" />
-      <p id="userInfo"></p>
-      <button id="loginBtn">Login with Google</button>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <i data-lucide="line-chart" stroke-width="2.5" w="32" h="32"></i>
+      <h2>QuantTrade</h2>
     </div>
-
-    <div class="controls">
-      <label>From: <input type="date" id="startDate"></label>
-      <label>To:   <input type="date" id="endDate"></label>
+    <div class="sidebar-nav">
+      <a href="#" class="nav-item active">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
     </div>
-
-    <div class="search-row">
-      <input id="companyInput" placeholder="Type company name or ticker..." autocomplete="off">
-      <button id="addBtn">Add</button>
-    </div>
-
-    <div id="chips"></div>
-
-    <div style="text-align:center;">
-      <button id="submitBtn">Show Results</button>
-    </div>
-
-    <div id="results" class="results-grid"></div>
-
-    <div class="prediction-section" id="predictionSection" style="display:none;">
-      <h2>🚀 AI & Quantum Investment Analysis</h2>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 150px;">Company</th>
-              <th style="width: 180px;">Quantum Signal</th>
-              <th>Analysis (Day / Short / Long Term)</th>
-            </tr>
-          </thead>
-          <tbody id="predictionBody">
-            </tbody>
-        </table>
+    
+    <div class="sidebar-footer">
+      <div id="auth-section">
+        <div class="user-profile">
+          <img id="userPhoto" style="display:none;" alt="User Photo" />
+          <p id="userInfo"></p>
+        </div>
+        <button id="loginBtn">Login with Google</button>
       </div>
     </div>
+  </aside>
 
+  <!-- Main Content -->
+  <div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title">Overview</div>
+    </header>
+
+    <!-- Content -->
+    <div class="content">
+      
+      <!-- Controls Panel -->
+      <div class="controls-card">
+        <div class="controls-header">
+          <i data-lucide="sliders-horizontal"></i>
+          Analysis Parameters
+        </div>
+        
+        <div class="controls-body">
+          <div class="input-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate">
+          </div>
+          
+          <div class="input-group">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate">
+          </div>
+          
+          <div class="input-group" style="flex: 1;">
+            <label for="companyInput">Select Asset</label>
+            <div class="search-wrapper">
+              <input type="text" id="companyInput" placeholder="Type company name or ticker symbol..." autocomplete="off">
+              <button id="addBtn" class="btn">
+                <i data-lucide="plus" width="18" height="18"></i> Add
+              </button>
+            </div>
+          </div>
+          
+          <button id="submitBtn" class="btn">
+            <i data-lucide="activity" width="18" height="18"></i> Analyze Market
+          </button>
+        </div>
+
+        <div id="chips"></div>
+      </div>
+
+      <!-- AI Analysis Section -->
+      <div class="prediction-section" id="predictionSection">
+        <div class="prediction-header">
+          <i data-lucide="sparkles"></i>
+          <h2>Quantum AI Insights</h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 250px;">Asset</th>
+                <th style="width: 220px;">Quantum Forecast</th>
+                <th>Comprehensive Analysis</th>
+              </tr>
+            </thead>
+            <tbody id="predictionBody">
+              <!-- Predictions injected via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Results Grid -->
+      <div id="results" class="results-grid">
+        <!-- Cards injected via JS -->
+      </div>
+
+    </div>
   </div>
 
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+  
   <script src="app.js" type="module"></script>
 </body>
 </html>
